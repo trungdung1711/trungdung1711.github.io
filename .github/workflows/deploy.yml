@@ -1,44 +1,25 @@
-name: Deploy Static Profile to GitHub Pages
+name: Deploy
 
 # =============================================================================
 # Workflow: Deploy Static Profile to GitHub Pages
 # =============================================================================
 # This workflow deploys your static HTML site directly to GitHub Pages.
 # No build step is required since the site is already static.
-#
-# GitHub Pages is a free hosting service that makes your site accessible 
-# at: https://username.github.io/repository-name
 # =============================================================================
 
 on:
-  # Trigger the workflow every time you push to the main branch
   push:
     branches: ["main"]
-  # Allow manually triggering this workflow at any time from the Actions tab
   workflow_dispatch:
 
-# =============================================================================
-# Environment Variables
-# =============================================================================
-env:
-  REPO: ${{ github.event.repository.name }}
-  BASE_URL: /$REPO/
-
-# =============================================================================
-# Permissions
-# =============================================================================
 permissions:
-  contents: read              # Read repository contents (needed to checkout code)
-  pages: write                # Write to Pages deployment
-  id-token: write             # Verify identity and access for Pages deployment
+  contents: read
+  pages: write
+  id-token: write
 
-# =============================================================================
-# Concurrency Control
-# =============================================================================
-# Prevents multiple deployments from running simultaneously
 concurrency:
   group: "pages"
-  cancel-in-progress: true    # Cancel running deployment if a new one starts
+  cancel-in-progress: true
 
 jobs:
   deploy:
@@ -46,16 +27,19 @@ jobs:
     environment: github-pages
     
     steps:
-      # Step 1: Checkout Code
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      # Step 2: Deploy to GitHub Pages
-      # Direct deployment since no build step is needed
-      - name: Deploy to GitHub Pages
-        uses: actions/deploy-pages@v4
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload Pages Artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          publish_branch: main
-          publish_dir: "."
+          path: .
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v3
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
